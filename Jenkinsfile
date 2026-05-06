@@ -11,7 +11,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Build step running...'
-                echo 'python --v'
+                sh 'python --v'
             }
         }
 
