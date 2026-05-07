@@ -1,45 +1,43 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = "jenkins-python-app"
+    parameters {
+
+        choice(
+            name: 'ENV',
+            choices: ['dev', 'staging', 'prod'],
+            description: 'Select environment'
+        )
+
+        booleanParam(
+            name: 'RUN_TESTS',
+            defaultValue: true,
+            description: 'Run tests before deployment'
+        )
     }
 
     stages {
 
-        stage('Checkout') {
+        stage('Build') {
             steps {
-                git branch: 'main', url: 'https://github.com/anmolkumar-prive/jenkins.git'
+                echo "Building app..."
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Test') {
+            when {
+                expression { params.RUN_TESTS == true }
+            }
+
             steps {
-                sh 'docker build -t $IMAGE_NAME .'
+                echo "Running tests..."
             }
         }
 
-        stage('Run Tests in Container') {
+        stage('Deploy') {
             steps {
-                sh 'docker run --rm $IMAGE_NAME pytest -v'
+                echo "Deploying to ${params.ENV}"
             }
-        }
-
-        stage('Run App') {
-            steps {
-                sh 'docker run --rm $IMAGE_NAME'
-            }
-        }
-
-    }
-
-    post {
-        success {
-            echo 'PIPELINE SUCCESS 🎉'
-        }
-
-        failure {
-            echo 'PIPELINE FAILED ❌'
         }
     }
 }
